@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { FormEvent } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Mail } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase'
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
@@ -120,7 +120,7 @@ export default function SignInPage() {
           Sign in with Google
         </button>
         <p className="mt-4 text-center text-gray-600">
-          Don't have an account? <Link href="/signup" className="text-purple-700 hover:underline">Sign Up</Link>
+          Don&apos;t have an account? <Link href="/signup" className="text-purple-700 hover:underline">Sign Up</Link>
         </p>
       </div>
     </div>

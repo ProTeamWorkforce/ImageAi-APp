@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithP
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Button } from './ui/button';
 import { toast } from 'react-toastify';
+import { FirebaseError } from 'firebase/app';
 
 interface AuthProps {
   onSignIn: () => void;
@@ -24,9 +25,14 @@ export function Auth({ onSignIn, onSignUp, onGoogleSignIn, onLogout }: AuthProps
       await signInWithEmailAndPassword(auth, email, password);
       toast.success('Signed in successfully');
       onSignIn();
-    } catch (error: any) {
-      console.error('Error signing in:', error);
-      toast.error(`Failed to sign in: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        console.error('Error signing in:', error);
+        toast.error(`Failed to sign in: ${error.message}`);
+      } else {
+        console.error('Unknown error during sign in:', error);
+        toast.error('An unknown error occurred during sign in');
+      }
     }
   };
 
@@ -35,9 +41,14 @@ export function Auth({ onSignIn, onSignUp, onGoogleSignIn, onLogout }: AuthProps
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success('Signed up successfully');
       onSignUp();
-    } catch (error: any) {
-      console.error('Error signing up:', error);
-      toast.error(`Failed to sign up: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        console.error('Error signing up:', error);
+        toast.error(`Failed to sign up: ${error.message}`);
+      } else {
+        console.error('Unknown error during sign up:', error);
+        toast.error('An unknown error occurred during sign up');
+      }
     }
   };
 
@@ -46,9 +57,14 @@ export function Auth({ onSignIn, onSignUp, onGoogleSignIn, onLogout }: AuthProps
       await signInWithPopup(auth, googleProvider);
       toast.success('Signed in with Google successfully');
       onGoogleSignIn();
-    } catch (error: any) {
-      console.error('Error signing in with Google:', error);
-      toast.error(`Failed to sign in with Google: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        console.error('Error signing in with Google:', error);
+        toast.error(`Failed to sign in with Google: ${error.message}`);
+      } else {
+        console.error('Unknown error during Google sign in:', error);
+        toast.error('An unknown error occurred during Google sign in');
+      }
     }
   };
 
@@ -57,9 +73,14 @@ export function Auth({ onSignIn, onSignUp, onGoogleSignIn, onLogout }: AuthProps
       await signOut(auth);
       toast.success('Logged out successfully');
       onLogout();
-    } catch (error: any) {
-      console.error('Error logging out:', error);
-      toast.error(`Failed to log out: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof FirebaseError) {
+        console.error('Error logging out:', error);
+        toast.error(`Failed to log out: ${error.message}`);
+      } else {
+        console.error('Unknown error during logout:', error);
+        toast.error('An unknown error occurred during logout');
+      }
     }
   };
 

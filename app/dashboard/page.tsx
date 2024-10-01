@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileText, Table, Search, LogOut, Download, CreditCard, AlertCircle, User, Settings, HelpCircle, Moon, Sun, X, Camera, Image as ImageIcon } from 'lucide-react'
+import { FileText, Table, Search, LogOut, Download, CreditCard, AlertCircle, Moon, Sun, X, Camera, Image as ImageIcon } from 'lucide-react'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useSwipeable } from 'react-swipeable'
@@ -25,7 +25,6 @@ export default function AppPage() {
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isZoomed, setIsZoomed] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
 
@@ -88,6 +87,15 @@ export default function AppPage() {
     }
   }
 
+  interface Label {
+    description: string;
+    score: number;
+  }
+
+  interface SearchResult {
+    url: string;
+  }
+
   const formatResult = (result: string, type: 'text' | 'excel' | 'search') => {
     if (type === 'text') {
       // Split the text into lines and format each line
@@ -111,13 +119,13 @@ export default function AppPage() {
           <div>
             <h3 className="font-bold mb-2">Labels:</h3>
             <ul className="list-disc list-inside mb-4">
-              {data.labels.map((label: any, index: number) => (
+              {data.labels.map((label: Label, index: number) => (
                 <li key={index}>{label.description}: {(label.score * 100).toFixed(2)}%</li>
               ))}
             </ul>
             <h3 className="font-bold mb-2">Similar Images:</h3>
             <ul className="list-disc list-inside">
-              {data.searchResults.map((result: any, index: number) => (
+              {data.searchResults.map((result: SearchResult, index: number) => (
                 <li key={index}><a href={result.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">{result.url}</a></li>
               ))}
             </ul>
@@ -382,10 +390,10 @@ export default function AppPage() {
                 <div className="flex flex-wrap gap-4 mt-4">
                   <button
                     type="submit"
-                    disabled={isProcessing || isUploading}
+                    disabled={isProcessing}
                     className="bg-white text-purple-700 px-4 py-2 rounded-md hover:bg-opacity-90 transition duration-200 flex items-center disabled:opacity-50 dark:bg-gray-700 dark:text-white"
                   >
-                    {isUploading ? 'Uploading...' : <><FileText className="mr-2" /> Extract Text</>}
+                    <FileText className="mr-2" /> Extract Text
                   </button>
                   <button
                     type="button"

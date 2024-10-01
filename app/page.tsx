@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check, Menu, X } from 'lucide-react'
 
@@ -176,7 +175,7 @@ export default function LandingPage() {
 
           <section id="contact" className="text-center">
             <h2 className="text-3xl font-bold mb-8">Get in Touch</h2>
-            <p className="text-xl mb-8">Have questions? We're here to help!</p>
+            <p className="text-xl mb-8">Have questions? We&apos;re here to help!</p>
             <Link
               href="/contact"
               className="bg-white text-purple-700 px-8 py-3 rounded-md text-lg font-semibold hover:bg-opacity-90 transition duration-200 inline-flex items-center"

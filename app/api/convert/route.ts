@@ -15,9 +15,10 @@ export async function POST(req: NextRequest) {
   try {
     await auth.verifyIdToken(idToken);
     console.log('Firebase token verified successfully');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Invalid Firebase token:', error);
-    return NextResponse.json({ error: 'Invalid token', details: error.message }, { status: 401 });
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: 'Invalid token', details: errorMessage }, { status: 401 });
   }
 
   // Process the request
@@ -80,12 +81,13 @@ export async function POST(req: NextRequest) {
       console.log('Received result from Express server:', result);
       return NextResponse.json(result);
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error in Next.js API route:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({
-       error: 'Internal server error',
-       details: error.message,
-      stack: error.stack
+      error: 'Internal server error',
+      details: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
 }
