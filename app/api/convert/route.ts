@@ -83,8 +83,22 @@ export async function POST(req: NextRequest) {
     }
 
     if (conversionType === 'excel') {
+      console.log('Processing Excel conversion response');
+      console.log('Response content-type:', response.headers.get('content-type'));
+      
+      // Check if the response is actually an Excel file or an error
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        // Backend returned JSON (likely an error) instead of Excel file
+        const errorResult = await response.json();
+        console.log('Backend returned JSON instead of Excel file:', errorResult);
+        return NextResponse.json(errorResult, { status: response.status });
+      }
+      
       // For Excel, return the binary data directly
       const excelBuffer = await response.arrayBuffer();
+      console.log('Excel buffer size:', excelBuffer.byteLength);
+      
       return new NextResponse(excelBuffer, {
         status: 200,
         headers: {

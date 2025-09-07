@@ -161,7 +161,14 @@ export default function AppPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch (jsonError) {
+          // If it's not JSON, get it as text
+          const errorText = await response.text();
+          errorData = { error: 'Server error', details: errorText };
+        }
         console.error('Server error:', errorData);
         throw new Error(`Conversion failed: ${errorData.error || 'Unknown error'}`);
       }
