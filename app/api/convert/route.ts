@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const expressServerUrl = process.env.EXPRESS_SERVER_URL || 'http://localhost:3000';
     const endpoint = `/api/convert/${conversionType}`;
 
-    const fullUrl = `${expressServerUrl}${endpoint}`;
+    const fullUrl = expressServerUrl.replace(//$/, "") + endpoint;
     console.log('Sending request to Express server:', fullUrl);
 
     const formDataToSend = new FormData();
