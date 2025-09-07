@@ -162,12 +162,21 @@ export default function AppPage() {
 
       if (!response.ok) {
         let errorData;
+        
+        // Clone the response so we can try reading it in different formats
+        const responseClone = response.clone();
+        
         try {
           errorData = await response.json();
         } catch {
-          // If it's not JSON, get it as text
-          const errorText = await response.text();
-          errorData = { error: 'Server error', details: errorText };
+          // If it's not JSON, get it as text from the cloned response
+          try {
+            const errorText = await responseClone.text();
+            errorData = { error: 'Server error', details: errorText };
+          } catch {
+            // If both fail, create a generic error
+            errorData = { error: 'Server error', details: 'Unknown error format' };
+          }
         }
         console.error('Server error:', errorData);
         throw new Error(`Conversion failed: ${errorData.error || 'Unknown error'}`);
