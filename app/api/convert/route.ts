@@ -61,7 +61,11 @@ export async function POST(req: NextRequest) {
 
     console.log('FormData contents:');
     for (const [key, value] of Array.from(formDataToSend.entries())) {
-      console.log(`  ${key}:`, value instanceof File ? `File(${value.name})` : value);
+      if (value && typeof value === 'object' && 'name' in value) {
+        console.log(`  ${key}:`, `File(${(value as any).name})`);
+      } else {
+        console.log(`  ${key}:`, value);
+      }
     }
 
     const response = await fetch(fullUrl, {
