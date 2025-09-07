@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     console.log('File size:', buffer.length, 'bytes');
 
     const formDataToSend = new FormData();
-    formDataToSend.append('file', new Blob([buffer], { type: file.type }), file.name);
+    formDataToSend.append('image', new Blob([buffer], { type: file.type }), file.name);
     formDataToSend.append('type', conversionType);
 
     console.log('FormData contents:');
@@ -92,6 +92,24 @@ export async function POST(req: NextRequest) {
       // For other types, parse as JSON
       const result = await response.json();
       console.log('Received result from Express server:', result);
+      console.log('Result type:', typeof result);
+      console.log('Result keys:', Object.keys(result));
+      
+      // Check if result is base64 encoded
+      if (result && result.result && typeof result.result === 'string') {
+        try {
+          const decoded = atob(result.result);
+          console.log('Successfully decoded base64 result, length:', decoded.length);
+          console.log('Decoded preview:', decoded.substring(0, 100) + '...');
+          
+          // Return the decoded result instead of base64
+          return NextResponse.json({ result: decoded });
+        } catch (decodeError) {
+          console.log('Result is not base64 encoded, returning as is');
+          return NextResponse.json(result);
+        }
+      }
+      
       return NextResponse.json(result);
     }
   } catch (error: unknown) {
