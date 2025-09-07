@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/firebase-admin';
 
+export async function GET() {
+  return NextResponse.json({
+    message: 'ImageAI API Route Diagnostic',
+    environment: {
+      EXPRESS_SERVER_URL: process.env.EXPRESS_SERVER_URL || 'not set',
+      NODE_ENV: process.env.NODE_ENV,
+    },
+    timestamp: new Date().toISOString(),
+  });
+}
+
 export async function POST(req: NextRequest) {
   console.log('Received request in Next.js API route');
 
