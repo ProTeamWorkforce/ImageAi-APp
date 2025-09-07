@@ -98,16 +98,45 @@ export async function POST(req: NextRequest) {
       console.log('Processing Excel conversion response');
       console.log('Response content-type:', response.headers.get('content-type'));
       
-      // Check if the response is actually an Excel file or an error
+      // Check if the response is JSON (could be base64 Excel or error)
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
-        // Backend returned JSON (likely an error) instead of Excel file
-        const errorResult = await response.json();
-        console.log('Backend returned JSON instead of Excel file:', errorResult);
-        return NextResponse.json(errorResult, { status: response.status });
+        const jsonResponse = await response.json();
+        console.log('Backend returned JSON response:', jsonResponse);
+        
+        // Check if it's a successful response with base64-encoded Excel data
+        if (jsonResponse.result && typeof jsonResponse.result === 'string') {
+          try {
+            // Try to decode the base64 data
+            const base64Data = jsonResponse.result;
+            const binaryString = atob(base64Data);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+              bytes[i] = binaryString.charCodeAt(i);
+            }
+            
+            console.log('Successfully decoded base64 Excel data, size:', bytes.length, 'bytes');
+            
+            return new NextResponse(bytes, {
+              status: 200,
+              headers: {
+                'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition': 'attachment; filename=converted.xlsx',
+              },
+            });
+          } catch (decodeError: unknown) {
+            console.error('Failed to decode base64 Excel data:', decodeError);
+            const errorMessage = decodeError instanceof Error ? decodeError.message : 'Unknown decode error';
+            return NextResponse.json({ error: 'Failed to decode Excel file', details: errorMessage }, { status: 500 });
+          }
+        } else {
+          // It's an error response
+          console.log('Backend returned error in JSON:', jsonResponse);
+          return NextResponse.json(jsonResponse, { status: response.status });
+        }
       }
       
-      // For Excel, return the binary data directly
+      // For non-JSON responses, handle as binary Excel data
       const excelBuffer = await response.arrayBuffer();
       console.log('Excel buffer size:', excelBuffer.byteLength);
       
