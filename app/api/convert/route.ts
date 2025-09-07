@@ -77,9 +77,21 @@ export async function POST(req: NextRequest) {
     console.log('Express server response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Express server error:', errorText);
-      return NextResponse.json({ error: 'Conversion failed', details: errorText }, { status: response.status });
+      let errorResult;
+      const contentType = response.headers.get('content-type');
+      
+      if (contentType && contentType.includes('application/json')) {
+        // Parse JSON error response
+        errorResult = await response.json();
+        console.error('Express server JSON error:', errorResult);
+      } else {
+        // Handle non-JSON error response
+        const errorText = await response.text();
+        console.error('Express server text error:', errorText);
+        errorResult = { error: 'Conversion failed', details: errorText };
+      }
+      
+      return NextResponse.json(errorResult, { status: response.status });
     }
 
     if (conversionType === 'excel') {
