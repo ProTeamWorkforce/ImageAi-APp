@@ -164,7 +164,7 @@ export default function AppPage() {
         let errorData;
         try {
           errorData = await response.json();
-        } catch (jsonError) {
+        } catch {
           // If it's not JSON, get it as text
           const errorText = await response.text();
           errorData = { error: 'Server error', details: errorText };

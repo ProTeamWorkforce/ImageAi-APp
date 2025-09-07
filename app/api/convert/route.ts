@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     console.log('FormData contents:');
     for (const [key, value] of Array.from(formDataToSend.entries())) {
       if (value && typeof value === 'object' && 'name' in value) {
-        console.log(`  ${key}:`, `File(${(value as any).name})`);
+        console.log(`  ${key}:`, `File(${(value as { name: string }).name})`);
       } else {
         console.log(`  ${key}:`, value);
       }
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
           
           // Return the decoded result instead of base64
           return NextResponse.json({ result: decoded });
-        } catch (decodeError) {
+        } catch {
           console.log('Result is not base64 encoded, returning as is');
           return NextResponse.json(result);
         }
