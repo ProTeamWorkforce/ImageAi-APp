@@ -1,0 +1,19 @@
+    let response;
+    try {
+      response = await fetch(fullUrl, {
+        method: 'POST',
+        body: formDataToSend,
+        headers: {
+          'User-Agent': 'ImageAI-App/1.0',
+        },
+      });
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError);
+      return NextResponse.json({
+        error: 'Connection failed',
+        details: `Failed to connect to backend server: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`,
+        backend_url: fullUrl
+      }, { status: 500 });
+    }
+
+    console.log('Express server response status:', response.status);
