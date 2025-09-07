@@ -53,8 +53,8 @@ export async function POST(req: NextRequest) {
 
     console.log('File size:', buffer.length, 'bytes');
 
-    const expressServerUrl = process.env.EXPRESS_SERVER_URL || 'http://localhost:3000';
-    const endpoint = `/api/convert`;
+    const expressServerUrl = process.env.EXPRESS_SERVER_URL || 'http://localhost:3001';
+    const endpoint = `/api/convert/${conversionType}`;
 
     const fullUrl = expressServerUrl.replace(/\/$/, "") + endpoint;
     console.log('=== BACKEND REQUEST DETAILS ===');
@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
 
     const formDataToSend = new FormData();
     formDataToSend.append('image', new Blob([buffer], { type: file.type }), file.name);
-    formDataToSend.append('type', conversionType);
 
     console.log('FormData contents:');
     for (const [key, value] of Array.from(formDataToSend.entries())) {
@@ -82,17 +81,25 @@ export async function POST(req: NextRequest) {
 
     let response;
     try {
+      console.log('Making request to backend...');
       response = await fetch(fullUrl, {
         method: 'POST',
         body: formDataToSend,
       });
+      console.log('Backend response received');
     } catch (fetchError) {
       console.error('Failed to connect to backend server:', fetchError);
+      const errorMessage = fetchError instanceof Error ? fetchError.message : 'Unknown fetch error';
       return NextResponse.json({
         error: 'Backend connection failed',
-        details: `Could not connect to ${fullUrl}. Backend server may be down.`,
+        details: `Could not connect to ${fullUrl}. Error: ${errorMessage}. Make sure the Express server is running on port 3001.`,
         backend_url: fullUrl,
-        environment_url: process.env.EXPRESS_SERVER_URL || 'not set'
+        environment_url: process.env.EXPRESS_SERVER_URL || 'not set',
+        troubleshooting: {
+          step1: 'Check if Express server is running: npm run server or node server.js',
+          step2: 'Verify the server is accessible: curl http://localhost:3001/health',
+          step3: 'Check firewall/network settings if using external URL'
+        }
       }, { status: 503 });
     }
 
@@ -103,15 +110,42 @@ export async function POST(req: NextRequest) {
       let errorResult;
       const contentType = response.headers.get('content-type');
       
+      console.log('Backend returned error status:', response.status);
+      console.log('Content-Type:', contentType);
+      
       if (contentType && contentType.includes('application/json')) {
         // Parse JSON error response
-        errorResult = await response.json();
-        console.error('Express server JSON error:', errorResult);
+        try {
+          errorResult = await response.json();
+          console.error('Express server JSON error:', errorResult);
+        } catch (parseError) {
+          console.error('Failed to parse JSON error response:', parseError);
+          errorResult = { 
+            error: 'Backend error', 
+            details: `Backend returned status ${response.status} but response could not be parsed as JSON`,
+            status: response.status,
+            content_type: contentType
+          };
+        }
       } else {
         // Handle non-JSON error response
-        const errorText = await response.text();
-        console.error('Express server text error:', errorText);
-        errorResult = { error: 'Conversion failed', details: errorText };
+        try {
+          const errorText = await response.text();
+          console.error('Express server text error:', errorText);
+          errorResult = { 
+            error: 'Backend error', 
+            details: errorText || `Backend returned status ${response.status}`,
+            status: response.status,
+            content_type: contentType
+          };
+        } catch (textError) {
+          console.error('Failed to read error response as text:', textError);
+          errorResult = { 
+            error: 'Backend error', 
+            details: `Backend returned status ${response.status} but response could not be read`,
+            status: response.status
+          };
+        }
       }
       
       return NextResponse.json(errorResult, { status: response.status });

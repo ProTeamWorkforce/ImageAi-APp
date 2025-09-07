@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Add logging middleware
 app.use((req, res, next) => {
-  console.log(`Received ${req.method} request to ${req.url}`);
+  console.log(`[${new Date().toISOString()}] Received ${req.method} request to ${req.url}`);
   console.log('Headers:', req.headers);
   next();
 });
@@ -24,7 +24,7 @@ app.use((req, res, next) => {
 // Import and use the convert routes
 const convertRoutes = require('./api/convert');
 app.use('/api/convert', (req, res, next) => {
-  upload.single('file')(req, res, (err) => {
+  upload.single('image')(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       console.error('Multer error:', err);
       return res.status(400).json({ error: 'File upload error', details: err.message });
@@ -47,7 +47,11 @@ app.use('/api/convert', (req, res, next) => {
 
 // Health check route
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
+  res.status(200).json({ 
+    status: 'OK', 
+    message: 'Express backend server is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Error handling middleware
@@ -56,7 +60,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error', details: err.message, stack: err.stack });
 });
 
-const PORT = process.env.PORT || 3000;
+// Use port 3001 to avoid conflicts with Next.js dev server (port 3000)
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Express backend server is running on port ${PORT}`);
+  console.log(`Health check available at: http://localhost:${PORT}/health`);
+  console.log(`API endpoint available at: http://localhost:${PORT}/api/convert`);
 });
