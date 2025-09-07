@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     const fullUrl = expressServerUrl.replace(/\/$/, "") + endpoint;
     console.log('=== BACKEND REQUEST DETAILS ===');
     console.log('Backend server URL:', expressServerUrl);
+    console.log('Environment EXPRESS_SERVER_URL:', process.env.EXPRESS_SERVER_URL);
     console.log('Endpoint:', endpoint);
     console.log('Complete URL:', fullUrl);
     console.log('Conversion type:', conversionType);
@@ -68,10 +69,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const response = await fetch(fullUrl, {
-      method: 'POST',
-      body: formDataToSend,
-    });
+    let response;
+    try {
+      response = await fetch(fullUrl, {
+        method: 'POST',
+        body: formDataToSend,
+      });
+    } catch (fetchError) {
+      console.error('Failed to connect to backend server:', fetchError);
+      return NextResponse.json({
+        error: 'Backend connection failed',
+        details: `Could not connect to ${fullUrl}. Backend server may be down.`,
+        backend_url: fullUrl,
+        environment_url: process.env.EXPRESS_SERVER_URL || 'not set'
+      }, { status: 503 });
+    }
 
     console.log('Express server response status:', response.status);
     console.log('Express server response headers:', Object.fromEntries(response.headers.entries()));
