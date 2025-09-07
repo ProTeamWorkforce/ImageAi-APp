@@ -15,6 +15,8 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   console.log('Received request in Next.js API route');
 
+  // Temporarily comment out Firebase auth to test environment variables
+  /*
   // Verify Firebase ID token
   const authHeader = req.headers.get('Authorization');
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -31,6 +33,7 @@ export async function POST(req: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: 'Invalid token', details: errorMessage }, { status: 401 });
   }
+  */
 
   // Process the request
   try {
