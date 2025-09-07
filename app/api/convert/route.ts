@@ -43,14 +43,26 @@ export async function POST(req: NextRequest) {
     console.log('File size:', buffer.length, 'bytes');
 
     const expressServerUrl = process.env.EXPRESS_SERVER_URL || 'http://localhost:3000';
-    const endpoint = `/api/convert/${conversionType}`;
+    const endpoint = `/api/convert`;
 
     const fullUrl = expressServerUrl.replace(/\/$/, "") + endpoint;
-    console.log('Sending request to Express server:', fullUrl);
+    console.log('=== BACKEND REQUEST DETAILS ===');
+    console.log('Backend server URL:', expressServerUrl);
+    console.log('Endpoint:', endpoint);
+    console.log('Complete URL:', fullUrl);
+    console.log('Conversion type:', conversionType);
+    console.log('File name:', file.name);
+    console.log('File type:', file.type);
+    console.log('File size:', buffer.length, 'bytes');
 
     const formDataToSend = new FormData();
     formDataToSend.append('file', new Blob([buffer], { type: file.type }), file.name);
     formDataToSend.append('type', conversionType);
+
+    console.log('FormData contents:');
+    for (const [key, value] of Array.from(formDataToSend.entries())) {
+      console.log(`  ${key}:`, value instanceof File ? `File(${value.name})` : value);
+    }
 
     const response = await fetch(fullUrl, {
       method: 'POST',
@@ -58,6 +70,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log('Express server response status:', response.status);
+    console.log('Express server response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
